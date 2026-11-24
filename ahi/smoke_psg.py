@@ -16,23 +16,14 @@ import torch
 sys.path.insert(0, str(Path(__file__).resolve().parent / "wuji-dl"))
 
 from losses.event_cls import EventDetectionLoss
-from models.base import base_model
 from models.sleep_staging import SleepStagingNet
 from physionet_psg import EPOCH_SECONDS, ahi_features, read_record, staging_features
+from sleepnetzero_event import AHI_TOKENS, ARCHITECTURE, build_event_model
 from wuji_dl.ops.cross_entropy import CrossEntropyLoss
 
 SCRATCH_ROOT = Path("/scratch/s5415436/BCG")
 RECORD_IDS = ("tr03-0005", "tr03-0029")
-ARCHITECTURE = {
-    "embedding_size": 64,
-    "hidden_size": 64,
-    "num_hidden_layers": 2,
-    "num_attention_heads": 4,
-    "intermediate_size": 128,
-    "max_position_embeddings": 512,
-}
 STAGING_TOKENS = {"heartbeat": 120, "breath": 120, "body_movement": 120}
-AHI_TOKENS = {"heartbreath": 50, "snore": 250}
 WINDOW_SECONDS = 300
 SEED = 42
 
@@ -56,7 +47,6 @@ def _step(
     n_tokens = WINDOW_SECONDS // token_seconds
     start = _window(labels, n_tokens, require_binary_classes=not staging)
     end = start + n_tokens
-    specs = [dict(head=name, token_len=size, input_channels=1) for name, size in token_sizes.items()]
     inputs = {"length": torch.tensor([n_tokens], device=device)}
     for name, size in token_sizes.items():
         signal = features[name]
@@ -65,21 +55,16 @@ def _step(
         inputs[name] = torch.from_numpy(signal[start * size:end * size]).unsqueeze(0).to(device)
 
     torch.manual_seed(SEED)
-    model_options = dict(ARCHITECTURE, features=specs)
     if staging:
-        model = SleepStagingNet(num_classes=5, **model_options).to(device)
+        features = [dict(head=name, token_len=size, input_channels=1) for name, size in token_sizes.items()]
+        model = SleepStagingNet(num_classes=5, features=features, **ARCHITECTURE).to(device)
         criterion = CrossEntropyLoss(ignore_index=-1)
         targets = torch.tensor(labels[start:end], dtype=torch.long, device=device).unsqueeze(0)
         logits = model(**inputs)
         expected_shape = (1, n_tokens, 5)
         loss = criterion(logits, targets)
     else:
-        backbone = dict(model_options, _name="models.sleep_net_zero.SleepNetZeroBackbone")
-        head = dict(
-            _name="models.heads.seqProj", hidden_size=ARCHITECTURE["hidden_size"],
-            output_name="ahi_event", num_classes=1,
-        )
-        model = base_model(backbone, [head]).to(device)
+        model = build_event_model().to(device)
         criterion = EventDetectionLoss(loss_weights={"head_loss": 1.0, "iou_loss": 0.0})
         targets = torch.tensor(labels[start:end], dtype=torch.float32, device=device).unsqueeze(0)
         logits = model(**inputs)["ahi_event"]

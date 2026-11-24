@@ -1,0 +1,21 @@
+#!/bin/bash
+#PBS -q gpuq2
+#PBS -j oe
+
+set -euo pipefail
+cd "${PBS_O_WORKDIR:?Submit from the BCG-LuminaX project root}"
+mode=${BCG_MODE:?Set BCG_MODE to smoke or pilot}
+case "$mode" in
+    smoke|pilot) ;;
+    *) printf 'Unknown BCG mode: %s\n' "$mode" >&2; exit 2 ;;
+esac
+
+run_root=/scratch/s5415436/BCG/runs
+run_name="wang2017-bcg-${mode}-${PBS_JOBID}"
+exec >"$run_root/$run_name.log" 2>&1
+printf 'node=%s job=%s visible_gpu=%s\n' "$(hostname)" "$PBS_JOBID" "${CUDA_VISIBLE_DEVICES:-unset}"
+nvidia-smi -L
+
+export OPENBLAS_NUM_THREADS=2 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 PYTHONDONTWRITEBYTECODE=1
+/sw/anaconda3/2024.06/bin/conda run --no-capture-output -n graphiti_env python -B ahi/train_wang2017_bcg.py \
+    "$mode" --device cuda --out-dir "$run_root/$run_name"

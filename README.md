@@ -26,3 +26,16 @@ Use `--data-dir` to select another directory with the same record layout. On Gri
 In a standalone environment, use Python 3.10+, PyTorch, Transformers, NumPy, SciPy, SymPy, and h5py. The runner uses the `wfdb` package when installed and includes a reader for these two records' local WFDB file layout. The existing Lightning checkpoint-loading path continues to use Lightning.
 
 See the [smoke run results](docs/psg-smoke.md) for validation details and the AHI counting convention.
+
+## Wang 2017 BCG event detection
+
+The BCG runner reads the original ZIP and uses the fixed 24/4/4 patient split. It saves window caches, logs, predictions, and checkpoints under `/scratch/s5415436/BCG/runs/`. Smoke checks the two training records `1001` and `1013`. The pilot selects its checkpoint on validation AUPRC and evaluates the four test patients after checkpoint selection. [Cohort audit](docs/wang2017-bcg-audit.md) · [Pilot split](docs/wang2017-bcg-pilot-split.csv)
+
+Submit from the project root on the Griffith login node. Run the pilot after the smoke summary shows `passed=true`.
+
+```bash
+qsub -N bcg_wang_smoke -v BCG_MODE=smoke -o /scratch/s5415436/BCG/runs/ \
+  -l 'select=1:ncpus=2:ngpus=1:mem=8gb,walltime=00:05:00' ahi/run_wang2017_bcg.pbs
+qsub -N bcg_wang_pilot -v BCG_MODE=pilot -o /scratch/s5415436/BCG/runs/ \
+  -l 'select=1:ncpus=4:ngpus=1:mem=16gb,walltime=00:30:00' ahi/run_wang2017_bcg.pbs
+```
