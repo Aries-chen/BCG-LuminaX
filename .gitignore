@@ -6,7 +6,7 @@
 /fm_samples/
 /test_data/
 /runs/
-/ahi/eval_signal_save/
+/ahi/eval_signal_save
 /ahi/index/ahi/*.csv
 /ahi/*.ipynb
 /ahi/*.png

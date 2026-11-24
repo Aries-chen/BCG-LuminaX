@@ -21,7 +21,7 @@ conda run --no-capture-output -n graphiti_env python ahi/smoke_psg.py \
   --labels-python /sw/anaconda3/2024.06/bin/python
 ```
 
-Add `--data-dir fm_samples --out-dir /tmp/bcg-psg-smoke` to read the original source layout when scratch is unavailable. Add `--device cuda` inside an allocated GPU session. For direct access to physical GPU 2, start the command with `CUDA_VISIBLE_DEVICES=2`. If the scheduler already isolates devices, use its visible device mapping.
+Use `--data-dir` to select another directory with the same record layout. On Griffith HPC, request one GPU from the `gpuq2` PBS queue and pass `--device cuda` to the runner inside the job. PBS sets `CUDA_VISIBLE_DEVICES` for the allocated GPU.
 
 In a standalone environment, use Python 3.10+, PyTorch, Transformers, NumPy, SciPy, SymPy, and h5py. The runner uses the `wfdb` package when installed and includes a reader for these two records' local WFDB file layout. The existing Lightning checkpoint-loading path continues to use Lightning.
 
