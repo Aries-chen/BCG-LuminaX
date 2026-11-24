@@ -31,6 +31,8 @@ See the [smoke run results](docs/psg-smoke.md) for validation details and the AH
 
 The BCG runner reads the original ZIP and uses the fixed 24/4/4 patient split. It saves window caches, logs, predictions, and checkpoints under `/scratch/s5415436/BCG/runs/`. Smoke checks the two training records `1001` and `1013`. The pilot selects its checkpoint on validation AUPRC and evaluates the four test patients after checkpoint selection. [Cohort audit](docs/wang2017-bcg-audit.md) · [Pilot split](docs/wang2017-bcg-pilot-split.csv)
 
+The GPU smoke and the 32-patient training pilot both passed their acceptance checks. [Training results](docs/wang2017-bcg-pilot.md)
+
 Submit from the project root on the Griffith login node. Run the pilot after the smoke summary shows `passed=true`.
 
 ```bash
