@@ -1,0 +1,10 @@
+task:
+  model:
+    _name: models.bcg_TUlite.TUlite
+
+
+  criterion:
+    _name: losses.event_cls.EventDetectionLoss
+    #loss_weights: {"iou_loss" : 1, "binary_cross_entropy" : 1}
+    loss_weights: { "head_loss" : 1, 'iou_loss' : 0}
+    weight: [1.6,0.4] # 0.159, 0.841

@@ -1,0 +1,26 @@
+data:
+  _name: wuji_dl.data.DefaultDataModule
+  common:
+    _name: data.ahi.AHIDataset
+    #weighted_sampling: 'ah_event'
+    memmap: Ture
+    max_tokens: 1
+    token_sec: 300
+    stride_tokens: 1
+    index: index/ahi/aux_feature_index_filter_quality_nasal.csv
+    features:
+      - head: bcg_raw
+        input_channels: 1
+        token_len: 150000
+      - head: ah_event
+        input_channels: 1
+        is_input: False
+        token_len: 300
+        is_attribute: True
+  train:
+    split: train
+    shuffle: True
+  val:
+    split: val
+  test:
+    split: test

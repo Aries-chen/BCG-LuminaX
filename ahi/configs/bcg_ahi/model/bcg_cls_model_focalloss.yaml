@@ -1,0 +1,18 @@
+task:
+  model:
+    _name: models.ahi.YOHOEncoder
+    conv_feature_layers: "[(512, 3, 1)] * 3 + [(512, 2, 1)] * 2" #
+    #conv_feature_layers: "[(512, 4, 2)] + [(512, 3, 2)] * 2 + [(512, 3, 3)] + [(512, 2, 2)] * 2"
+    final_dim: 9
+    dropout_input: 0.1
+    dropout_features: 0.1
+    encoder_embed_dim: 512
+    feature_len: 256
+    processor: "bcg"
+    n_mels: 128
+    n_fft: 256
+    hop_length: 20
+  criterion:
+    _name: losses.focal_loss.FocalLoss
+    #loss_weights: {"iou_loss" : 1, "binary_cross_entropy" : 1}
+    weight: [1,1] # 0.159, 0.841

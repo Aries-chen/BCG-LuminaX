@@ -1,0 +1,22 @@
+project: bcg_ahi
+_base:
+  - configs/bcg_ahi/task/anchor_base.yaml
+  - configs/bcg_ahi/model/bcg_anchor_model.yaml
+  - configs/bcg_ahi/data/bcg_anchor.yaml
+data:
+  common:
+    batch_size: 2048
+    num_workers: 32
+task:
+  optimizer:
+    _name: torch.optim.Adam
+    lr: 0.0001
+    weight_decay: 0.01
+  #lr_scheduler:
+  #  scheduler:
+  #    class: pl_bolts.optimizers.lr_scheduler.LinearWarmupCosineAnnealingLR
+  #    warmup_epochs: 5
+  #    max_epochs: 4000
+  #  interval: step
+
+PATIENCE: 30

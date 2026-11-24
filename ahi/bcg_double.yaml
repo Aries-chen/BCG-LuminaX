@@ -1,0 +1,21 @@
+_src:  //mnt/wujidata/datasets/parallel_data #  /mnt/local_data/datasets/golden_parallel_data
+_dst: /nvme3/preprocessed/bcg_heartbreath_and_snore/
+_task: bcg
+# BCG计算心率+呼吸+打鼾
+heartbreath:
+  _name: sleep_net_zero.bcg_hb
+  path: bcg_heartbreath.npz
+
+snore:
+  _name: sleep_net_zero.bcg_snore
+  path: bcg_snore.npz
+  do_filter: True
+
+ah_event:
+  _name: psg.ah_event_detect
+  style: "cls"
+  path: correct_AH_events.csv
+  
+duration:
+  _name: state
+  key: duration

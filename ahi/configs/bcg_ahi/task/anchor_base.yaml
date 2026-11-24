@@ -1,0 +1,21 @@
+task:
+  _name: tasks.ahi_anchor.AHITask
+  bad_case_study:
+    flag: False
+callbacks:
+  ckpt_best:
+    _name: lightning.pytorch.callbacks.ModelCheckpoint
+    monitor: val/loss
+    mode: min
+    #save_weights_only: True
+  early_stopping:
+    _name: lightning.pytorch.callbacks.EarlyStopping
+    monitor: val/loss
+    mode: min
+    patience: ${PATIENCE}
+  pbar:
+    _name: lightning.pytorch.callbacks.RichProgressBar
+    leave: True
+trainer:
+  log_every_n_steps: 10
+  max_epochs: 1000

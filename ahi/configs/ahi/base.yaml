@@ -1,0 +1,59 @@
+project: sleep-staging
+data:
+  _name: wuji_dl.data.DefaultDataModule
+  common:
+    _name: data.sleep_staging.SleepStagingDataset
+    max_tokens: 1800
+    stride_tokens: 1800
+    token_sec: 1
+    num_workers: 32
+    # r_margin: 0
+    n: 10
+    memmap: False
+    memmap_path: /nvme1/wyc/temp
+    features:
+      - src_name: heartbreath
+        input_channels: 1
+        token_len: 50
+      - src_name: snore
+        input_channels: 1
+        token_len: 250
+      - src_name: ahi_event
+        input_channels: 1
+        token_len: 1
+        is_input: False
+  train:
+    shuffle: True
+    split: train
+  val:
+    split: val
+  test:
+    split: val
+task:
+  _name: tasks.ahi.AHITask
+  criterion:
+    _name: losses.event_cls.EventDetectionLoss
+    loss_weights:
+      head_loss: 1.0
+      iou_loss: 0.0
+  optimizer:
+    _name: torch.optim.Adam
+    lr: 0.0001
+callbacks:
+  ckpt_best:
+    _name: lightning.pytorch.callbacks.ModelCheckpoint
+    monitor: val/f1
+    mode: max
+    save_weights_only: False
+  early_stopping:
+    _name: lightning.pytorch.callbacks.EarlyStopping
+    monitor: val/f1
+    mode: max
+    patience: ${PATIENCE}
+  pbar:
+    _name: lightning.pytorch.callbacks.RichProgressBar
+    leave: True
+trainer:
+  log_every_n_steps: 10
+  max_epochs: 100
+  precision: bf16-mixed

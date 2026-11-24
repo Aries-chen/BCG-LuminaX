@@ -1,0 +1,16 @@
+_base: 
+  - configs/ahi/base.yaml
+  - configs/ahi/model-base.yaml
+
+project: ah-events
+data:
+  _name: wuji_dl.data.DefaultDataModule
+  common:
+    batch_size: 400
+    index: index/ahi/bcg_ahi.csv
+trainer:
+  log_every_n_steps: 10
+  max_epochs: 100
+  precision: bf16
+
+PATIENCE: 10
