@@ -1,4 +1,3 @@
-import lightning as L
 import torch
 import torch.nn as nn
 from transformers import RoFormerConfig, RoFormerModel
@@ -63,6 +62,8 @@ class SleepNetZeroBackbone(nn.Module):
 class SleepNetZeroPretrained(nn.Module):
     def __init__(self, pretrain_task: str, pretrained: str):
         super().__init__()
+        import lightning as L
+
         task_cls = get_class(L.LightningModule, pretrain_task)
         ckpt = task_cls.load_from_checkpoint(pretrained, map_location="cpu")
         self.pretrained: SleepNetZeroBackbone = ckpt.model.backbone
