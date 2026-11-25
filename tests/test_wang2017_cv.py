@@ -3,6 +3,7 @@ import json
 import unittest
 
 import numpy as np
+from scipy.stats import f_oneway
 import torch
 
 from train_wang2017_cv import Packed, segmentation_loss, whole_record
@@ -16,8 +17,16 @@ class Wang2017CrossValidationTests(unittest.TestCase):
         validate_split(manifest)
         self.assertEqual(len(manifest["subjects"]), 125)
         self.assertEqual(manifest["clinical_bins"], [13, 40, 43, 29])
+        all_bins = np.array(manifest["clinical_bins"])
+        test_rei = []
         for fold in manifest["folds"]:
             self.assertEqual([len(fold[role]["subjects"]) for role in ("train", "val", "test")], [80, 20, 25])
+            ids = fold["test"]["subjects"]
+            test_rei.append([manifest["subjects"][sid]["rei"] for sid in ids])
+            actual = np.bincount([manifest["subjects"][sid]["clinical_bin"] for sid in ids], minlength=4)
+            np.testing.assert_array_equal(fold["test"]["clinical_bins"], actual)
+            self.assertTrue(np.all(np.abs(actual - all_bins / 5) < 1))
+        self.assertGreater(f_oneway(*test_rei).pvalue, .05)
         bad = copy.deepcopy(manifest)
         bad["folds"][0]["train"]["subjects"].append(bad["folds"][0]["test"]["subjects"][0])
         with self.assertRaisesRegex(ValueError, "subject overlap"):
