@@ -22,3 +22,17 @@ Submit from the project root with `ahi/run_wang2017_cv.pbs` and use one shared s
 qsub -v CV_STAGE=train,CV_FOLD=0,CV_ROOT=/scratch/s5415436/BCG/runs/wang2017-5fold-seed42 \
   -l 'select=1:ncpus=8:ngpus=1:mem=32gb,walltime=04:00:00' ahi/run_wang2017_cv.pbs
 ```
+
+The validation grid evaluates 156 combinations per fold. Selection minimizes patient REI MAE among
+configurations with event F1 at least 90% of the fold maximum at IoU 0.3. A frozen record binds the
+selected settings to the split, validation identities, and SHA-256 of `best.pt`.
+
+Once the five outer-test jobs finish, aggregate the saved predictions from `graphiti_env`.
+
+```bash
+python -B ahi/report_wang2017_cv.py --root /scratch/s5415436/BCG/runs/wang2017-5fold-seed42
+```
+
+The completed run used PBS array `144256[].cadmin` for validation calibration and `144257[].cadmin`
+for outer-test inference. Every subjob exited with status 0. The pooled evaluation covers all 125
+patients exactly once, with 1,081.77 hours of valid coverage. [Training summary](../reports/wang2017_5fold_training.md) · [OOF evaluation](../reports/wang2017_5fold_oof_metrics.md)
