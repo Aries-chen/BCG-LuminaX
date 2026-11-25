@@ -1,0 +1,18 @@
+#!/bin/bash
+#PBS -q gpuq2
+#PBS -j oe
+
+set -euo pipefail
+cd "${PBS_O_WORKDIR:?Submit from the project root}"
+stage=${CV_STAGE:?Set CV_STAGE}
+fold=${PBS_ARRAY_INDEX:-${CV_FOLD:-0}}
+root=${CV_ROOT:?Set CV_ROOT to the scratch run directory}
+mkdir -p "$root/logs"
+exec >"$root/logs/$stage-fold-$fold-${PBS_JOBID//[\[\]]/_}.log" 2>&1
+printf 'node=%s job=%s stage=%s fold=%s\n' "$(hostname)" "$PBS_JOBID" "$stage" "$fold"
+nvidia-smi -L
+export OPENBLAS_NUM_THREADS=2 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 PYTHONDONTWRITEBYTECODE=1
+resume=()
+if [[ ${CV_RESUME:-0} == 1 ]]; then resume+=(--resume); fi
+/sw/anaconda3/2024.06/bin/conda run --no-capture-output -n graphiti_env python -B ahi/train_wang2017_cv.py \
+    "$stage" --fold "$fold" --root "$root" --device cuda "${resume[@]}"

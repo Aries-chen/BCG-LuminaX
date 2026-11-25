@@ -111,11 +111,13 @@ class SleepNetZeroBackbone(nn.Module):
         nn.init.normal_(self.cls)
         self.hidden_size = config.hidden_size
 
-    def _forward(self, length: torch.Tensor, **kwargs):
+    def _forward(self, length: torch.Tensor, valid_mask: torch.Tensor | None = None, **kwargs):
         feats = [head(**kwargs) for head in self.feature_extractors]
         x = torch.stack(feats).sum(dim=0)
         x = torch.cat([self.cls.expand(x.size(0), -1, -1), x], dim=1)
         mask = length_mask(x.size(1), length + 1)
+        if valid_mask is not None:
+            mask = torch.cat((mask[:, :1], mask[:, 1:] & valid_mask), dim=1)
         return self.roformer(
             inputs_embeds=x, attention_mask=mask, output_hidden_states=True
         )
